@@ -20,6 +20,8 @@ typedef struct {
 	unsigned ip_socket;
 	unsigned cli_socket;
 	ip_list_t *ip_list;
+
+	int sniffing_stopped;
 } config_t;
 
 extern config_t gconf;

@@ -9,9 +9,15 @@
 
 #include "log.h"
 
+typedef struct _if_count if_count_t;
+struct _if_count {
+	struct sockaddr_in if_addr;
+	unsigned count;
+};
+
 typedef struct _ip_stat {
 	struct sockaddr_in addr;
-	unsigned count;
+	if_count_t *ifaces;
 } ip_stat_t;
 
 typedef struct _ip_list ip_list_t;

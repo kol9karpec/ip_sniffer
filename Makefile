@@ -1,5 +1,5 @@
 CC=gcc
-SCRS=main.c lib.c conf.c data.c log.c
+SCRS=main.c #lib.c conf.c data.c log.c
 HDRS=lib.h conf.h data.h log.h
 OBJS=$(SCRS:.c=.o)
 APP=my_app

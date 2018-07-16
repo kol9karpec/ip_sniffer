@@ -15,10 +15,13 @@
 #include <ifaddrs.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "conf.h"
 #include "data.h"
 #include "log.h"
+
+#define DEF_LOG_FILE "/var/log/"
 
 static void inline exit_err(const char * str) {
 	//TODO: print error to daemon log if daemon
@@ -26,23 +29,38 @@ static void inline exit_err(const char * str) {
 	exit(1);
 }
 
+typedef enum {
+	START,
+	STOP,
+	SHOW_IP_COUNT,
+	SELECT_IFACE,
+	STAT_IFACE,
+	HELP,
+	COMMANDS_NUM
+} command_t;
+
+const char* command_str[COMMANDS_NUM] = {
+	"start",
+	"stop",
+	"show",
+	"select",
+	"stat",
+	"--help"
+};
+
 
 int init_daemon_log(const char * filename);
 
-/*
- * Function does fork() and run daemon() in the child process
- *
- * @return 1 if parent process, 0 if child process
- */
 int run_daemon();
 
 int init_ip_socket();
-
 
 int capture_packets();
 
 int process_packet_addr(struct sockaddr_in *addr);
 
 bool daemon_repeat();
+
+int process_cli_command(command_t cmd, void *val);
 
 #endif /* __LIB_H__ */

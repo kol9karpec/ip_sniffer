@@ -8,16 +8,9 @@ int init_daemon_log(const char * filename) {
 
 int run_daemon() {
 	int retval = 0;
-#if 0
-	retval = fork();
-	if (retval == -1)
-		exit_err("fork()");
-	if (retval =! 0)
-		return 1;
-	daemon(0, 0);
-#endif
 
 	//TODO: check for repeat run
+	daemon(0, 0);
 
 	retval = init_ip_socket();
 	if(retval < 0)
@@ -28,8 +21,6 @@ int run_daemon() {
 		exit_err("fill_interfaces_list");
 
 	capture_packets();
-
-
 
 	//TODO: thread for waiting of cli
 
@@ -74,6 +65,7 @@ int process_packet_addr(struct sockaddr_in *addr) {
 }
 
 int init_ip_socket() {
+	//TODO: hdrincl
 	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
 	if(fd < 0)
 		exit_err("socket");
@@ -81,3 +73,32 @@ int init_ip_socket() {
 	return fd;
 }
 
+int process_cli_command(command_t cmd, void *val) {
+	switch(cmd) {
+		case START:
+			//TODO
+			run_daemon();
+			break;
+		case STOP:
+			//TODO
+			stop_daemon();
+			break;
+		case SHOW_IP_COUNT:
+			//TODO
+			show_ip_count();
+			break;
+		case SELECT_IFACE:
+			//TODO
+			select_iface();
+			break;
+		case HELP:
+			//TODO
+			print_help();
+			break;
+		default:
+			_log("Wrong command!\n");
+			return 1;
+	}
+
+	return 0;
+}
