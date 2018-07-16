@@ -19,8 +19,6 @@ int run_daemon() {
 
 	//TODO: check for repeat run
 
-
-	//TODO: init IP socket
 	retval = init_ip_socket();
 	if(retval < 0)
 		exit_err("init_ip_socket");
@@ -32,16 +30,8 @@ int run_daemon() {
 	capture_packets();
 
 
-	//TODO: read from IP socket
-
 
 	//TODO: thread for waiting of cli
-
-
-	//TODO: Update statistics
-
-
-	//TODO: Log packet (to log, cli)
 
 	return 0;
 }
@@ -50,7 +40,7 @@ int capture_packets() {
 	int saddr_size , data_size;
 	struct sockaddr saddr;
 	struct sockaddr_in *sin;
-	unsigned char *buffer = (unsigned char *)malloc(65536); //Its Big!
+	unsigned char *buffer = (unsigned char *)malloc(65536);
 
 	while(1)
 	{
@@ -63,11 +53,24 @@ int capture_packets() {
 			return -1;
 		}
 		sin = (struct sockaddr_in *)&saddr;
-		_log("received packet from %s\n", inet_ntoa(sin->sin_addr));
+		process_packet_addr(sin);
 
+		_log("received packet from %s\n", inet_ntoa(sin->sin_addr));
 
 	}
     return 0;
+}
+
+int process_packet_addr(struct sockaddr_in *addr) {
+	ip_list_t *list = gconf.ip_list;
+	ip_list_t *node = ip_in_list(list, *addr);
+	if (!node) {
+		node = add_ip(&list, *addr);
+	}
+
+	inc_ip_count(&node->data);
+
+	return 0;
 }
 
 int init_ip_socket() {
@@ -76,28 +79,5 @@ int init_ip_socket() {
 		exit_err("socket");
 
 	return fd;
-}
-
-int fill_interfaces_list() {
-	struct ifaddrs *tmp;
-	int rv;
-
-	rv = getifaddrs(&gconf.if_list);
-	if (rv)
-		exit_err("getifaddrs");
-
-	tmp = gconf.if_list;
-	while (tmp)
-	{
-		if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
-			struct sockaddr_in *sin = (struct sockaddr_in *)(tmp->ifa_addr);
-			char *ip_addr = inet_ntoa(sin->sin_addr);
-			_log("%s: %s\n", tmp->ifa_name, ip_addr?ip_addr:"");
-		}
-
-		tmp = tmp->ifa_next;
-	}
-
-	return 0;
 }
 
