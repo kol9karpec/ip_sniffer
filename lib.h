@@ -24,7 +24,7 @@
 
 #define DEF_LOG_FILE "/var/log/ip_sniffer.log"
 #define SOCKET_PATH "/tmp/ip_sniffer.socket"
-#define DEF_BUFSIZE 65536
+#define DEF_BUFSIZE 500
 
 extern const char* command_str[COMMANDS_NUM];
 

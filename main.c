@@ -78,7 +78,7 @@ void run_daemon() {
 	pthread_create(&gconf.wait_thread, NULL,
 			daemon_thread_func, NULL);
 	//TODO: check for repeat run
-#if 0
+#if 1
 	daemon(0, 0);
 #endif
 
@@ -144,7 +144,7 @@ void run_cli(command_t cmd, void *arg, unsigned size) {
 	if(rv == -1)
 		exit_err("read");
 
-	_log_cli("[size=%d] %s\n", rv, buf);
+	_log_cli("%s\n", buf);
 
 	close(sock);
 }
@@ -205,7 +205,7 @@ void * daemon_thread_func(void * arg) {
 		if (rv == -1) {
 			exit_err("write");
 		}
-		_log("Successful write %d bytesm, send_buf_size=%d\n", rv, send_buf_size);
+		_log("Successful write %d bytes\n", rv, send_buf_size);
 		close(data_socket);
 	}
 
