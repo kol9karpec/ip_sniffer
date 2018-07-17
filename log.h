@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 static void inline _log(const char * fmt,...) {
 	va_list args;
@@ -13,5 +14,10 @@ static void inline _log(const char * fmt,...) {
 	va_end(args);
 }
 
+static void inline exit_err(const char * str) {
+	//TODO: print error to daemon log if daemon
+	perror(str);
+	exit(1);
+}
 
 #endif

@@ -1,23 +1,25 @@
 #include "data.h"
 
 int equal(struct sockaddr_in *a, struct sockaddr_in *b) {
+#if 0
+	char str1[256];
+	char str2[256];
+	strcpy(str1, inet_ntoa(a->sin_addr));
+	strcpy(str2, inet_ntoa(b->sin_addr));
+	_log("Comparing %s vs %s\n", str1, str2);
+#endif
 	return a->sin_addr.s_addr - b->sin_addr.s_addr;
 }
 
 ip_list_t *ip_in_list(ip_list_t *head, struct sockaddr_in addr) {
 	while(head) {
 		if(!equal(&head->data.addr, &addr)) {
-#if 0
-			_log("%s: ip %s is in list!\n", __func__, inet_ntoa(addr.sin_addr));
-#endif
 			return head;
 		}
 		head = head->next;
 	}
 
-#if 0
 	_log("%s: ip %s is not in list!\n", __func__, inet_ntoa(addr.sin_addr));
-#endif
 	return head;
 }
 
@@ -28,9 +30,10 @@ ip_list_t *add_ip(ip_list_t **head, struct sockaddr_in addr) {
 		perror("malloc");
 		return NULL;
 	}
-	//TODO: per interface
 	new->data.addr = addr;
-	new->data.count = 0;
+	new->data.if_count = malloc(sizeof(unsigned)*gconf.if_num);
+	new->next = NULL;
+	memset(new->data.if_count, 0, sizeof(unsigned)*gconf.if_num);
 
 	if (tmp) {
 		while(tmp->next)
@@ -44,18 +47,18 @@ ip_list_t *add_ip(ip_list_t **head, struct sockaddr_in addr) {
 	return new;
 }
 
-void inc_ip_count(ip_stat_t *data) {
-	//TODO: per interface
-	data->count++;
-	_log("%s: %u\n",inet_ntoa(data->addr.sin_addr), data->count);
+void inc_ip_count(ip_stat_t *data, int if_num) {
+	data->if_count[if_num]++;
+	_log("[%s] %s: %u\n",gconf.if_list[if_num].name,
+			inet_ntoa(data->addr.sin_addr), data->if_count[if_num]);
 }
 
 void deinit_list(ip_list_t *head) {
 	ip_list_t *next = head;
 	do {
-		//TODO: deinit per interface
 		head = next;
 		next = head->next;
+		free(head->data.if_count);
 		free(head);
 	} while(next);
 }

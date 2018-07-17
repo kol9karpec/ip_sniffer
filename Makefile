@@ -1,6 +1,10 @@
 CC=gcc
-SCRS=main.c #lib.c conf.c data.c log.c
-HDRS=lib.h conf.h data.h log.h
+SCRS=main.c \
+	 lib.c \
+	 log.c \
+	 conf.c \
+	 data.c
+HDRS=lib.h log.h conf.h data.h 
 OBJS=$(SCRS:.c=.o)
 APP=my_app
 

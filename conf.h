@@ -7,26 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ifaddrs.h>
+#include <string.h>
 
 #include "data.h"
-#include "lib.h"
-
-typedef struct {
-	char *daemon_log_file;
-	char *daemon_pid_file;
-
-	/* Interfaces list may change. Now it is not handled. */
-	struct ifaddrs *if_list;
-	unsigned ip_socket;
-	unsigned cli_socket;
-	ip_list_t *ip_list;
-
-	int sniffing_stopped;
-} config_t;
+#include "types.h"
 
 extern config_t gconf;
 
 int fill_interfaces_list();
+int get_if_num(struct sockaddr_in addr);
 
 void deinit_conf();
 

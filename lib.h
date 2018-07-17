@@ -21,13 +21,8 @@
 #include "data.h"
 #include "log.h"
 
-#define DEF_LOG_FILE "/var/log/"
-
-static void inline exit_err(const char * str) {
-	//TODO: print error to daemon log if daemon
-	perror(str);
-	exit(1);
-}
+#define DEF_LOG_FILE "/var/log/ip_sniffer.log"
+#define DEF_BUFSIZE 65536
 
 typedef enum {
 	START,
@@ -39,28 +34,20 @@ typedef enum {
 	COMMANDS_NUM
 } command_t;
 
-const char* command_str[COMMANDS_NUM] = {
-	"start",
-	"stop",
-	"show",
-	"select",
-	"stat",
-	"--help"
-};
-
+extern const char* command_str[COMMANDS_NUM];
 
 int init_daemon_log(const char * filename);
 
-int run_daemon();
-
 int init_ip_socket();
 
-int capture_packets();
+int capture_packet(unsigned char *buffer, unsigned size);
 
-int process_packet_addr(struct sockaddr_in *addr);
+int process_ip_packet(unsigned char *buffer, unsigned size);
 
 bool daemon_repeat();
 
 int process_cli_command(command_t cmd, void *val);
+
+void print_help();
 
 #endif /* __LIB_H__ */
