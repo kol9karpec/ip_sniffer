@@ -3,6 +3,12 @@
 
 #define IF_NAME_SIZE 40
 #include <pthread.h>
+#include <netinet/ip.h>
+
+typedef struct {
+	struct in_addr addr;
+	unsigned count;
+} export_ip_stat_t;
 
 typedef struct {
 	char name[IF_NAME_SIZE];
@@ -40,5 +46,15 @@ typedef struct {
 
 	int sniffing_stopped;
 } config_t;
+
+typedef enum {
+	START=0,
+	STOP,
+	SHOW_IP_COUNT,
+	SELECT_IFACE,
+	STAT_IFACE,
+	HELP,
+	COMMANDS_NUM
+} command_t;
 
 #endif /* __TYPES_H__ */

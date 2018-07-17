@@ -48,8 +48,7 @@ ip_list_t *add_ip(ip_list_t **head, struct sockaddr_in addr) {
 }
 
 void inc_ip_count(ip_stat_t *data, int if_num) {
-	if(check_iface_on(if_num))
-		data->if_count[if_num]++;
+	data->if_count[if_num]++;
 	_log("[%s] %s: %u\n",gconf.if_list[if_num].name,
 			inet_ntoa(data->addr.sin_addr), data->if_count[if_num]);
 }

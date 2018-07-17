@@ -8,6 +8,7 @@ HDRS=lib.h log.h conf.h data.h
 OBJS=$(SCRS:.c=.o)
 APP=my_app
 CFLAGS+= -pthread
+CFLAGS+= -DNO_AUTO_SNIFF
 
 $(APP): $(OBJS) $(HDRS)
 	@$(CC) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS)
