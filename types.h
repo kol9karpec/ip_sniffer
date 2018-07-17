@@ -2,6 +2,7 @@
 #define __TYPES_H__
 
 #define IF_NAME_SIZE 40
+#include <pthread.h>
 
 typedef struct {
 	char name[IF_NAME_SIZE];
@@ -26,8 +27,11 @@ typedef struct {
 	char *daemon_log_file;
 	char *daemon_pid_file;
 
+	pthread_t wait_thread;
+
 	/* Interfaces list may change. Now it is not handled. */
 	iface_t *if_list;
+	unsigned if_mask;
 	unsigned if_num;
 
 	unsigned ip_socket;

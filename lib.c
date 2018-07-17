@@ -56,32 +56,34 @@ int init_ip_socket() {
 	return fd;
 }
 
-int run_cli();
+int init_unix_socket() {
+	int fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+	if(fd < 0)
+		exit_err("socket");
+
+	return fd;
+}
 
 int process_cli_command(command_t cmd, void *val) {
-#if 0
 	switch(cmd) {
 		case START:
-			//TODO
-			run_daemon();
+			gconf.sniffing_stopped = 0;
+			_log("start command arrived");
 			break;
 		case STOP:
-			//TODO
-			stop_daemon();
+			gconf.sniffing_stopped = 1;
+			_log("stop command arrived");
 			break;
 		case SHOW_IP_COUNT:
 			//TODO
-			show_ip_count();
 			break;
 		case SELECT_IFACE:
 			//TODO
-			select_iface();
 			break;
 		default:
 			_log("Wrong command!\n");
 			return 1;
 	}
-#endif
 
 	return 0;
 }

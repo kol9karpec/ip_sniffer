@@ -37,6 +37,9 @@ int fill_interfaces_list() {
 			char *ip_addr = inet_ntoa(sin->sin_addr);
 			memcpy(gconf.if_list[i].name, tmp->ifa_name, strlen(tmp->ifa_name)+1);
 			gconf.if_list[i].addr = *sin;
+#ifndef NO_AUTO_IFACES_UP
+			turn_iface_on(i);
+#endif
 			_log("Added interface %s to the list: %s\n", tmp->ifa_name,
 					ip_addr?ip_addr:"");
 			i++;
@@ -63,4 +66,27 @@ int get_if_num(struct sockaddr_in addr) {
 	}
 
 	return -1;
+}
+
+int get_if_num_name(char name[]) {
+	int i = 0;
+
+	for(i=0;i<gconf.if_num; i++) {
+		if(!strcmp(name, gconf.if_list[i].name))
+			return i;
+	}
+
+	return -1;
+}
+
+void turn_iface_on(int num) {
+	gconf.if_mask |= (1 << num);
+}
+
+int check_iface_on(int num) {
+	return gconf.if_mask & (1 << num);
+}
+
+void turn_iface_off(int num) {
+	gconf.if_mask &= ~(1 << num);
 }

@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/un.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -22,10 +23,11 @@
 #include "log.h"
 
 #define DEF_LOG_FILE "/var/log/ip_sniffer.log"
+#define SOCKET_PATH "/tmp/ip_sniffer.socket"
 #define DEF_BUFSIZE 65536
 
 typedef enum {
-	START,
+	START=0,
 	STOP,
 	SHOW_IP_COUNT,
 	SELECT_IFACE,
@@ -39,6 +41,7 @@ extern const char* command_str[COMMANDS_NUM];
 int init_daemon_log(const char * filename);
 
 int init_ip_socket();
+int init_unix_socket();
 
 int capture_packet(unsigned char *buffer, unsigned size);
 

@@ -7,6 +7,7 @@ SCRS=main.c \
 HDRS=lib.h log.h conf.h data.h 
 OBJS=$(SCRS:.c=.o)
 APP=my_app
+CFLAGS+= -pthread
 
 $(APP): $(OBJS) $(HDRS)
 	@$(CC) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS)

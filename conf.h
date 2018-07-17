@@ -16,6 +16,10 @@ extern config_t gconf;
 
 int fill_interfaces_list();
 int get_if_num(struct sockaddr_in addr);
+int get_if_num_name(char name[]);
+void turn_iface_on(int num);
+int check_iface_on(int num);
+void turn_iface_off(int num);
 
 void deinit_conf();
 
