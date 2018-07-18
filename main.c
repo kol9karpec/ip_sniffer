@@ -11,7 +11,8 @@ const char * help_str = "Usage: {start | stop | show <ip> | select <iface> | sta
 						 "\tshow <ip> - show count of packets for specified ip\n"\
 						 "\tselect <iface> - switch iface mode (sniffing on/off)\n" \
 						 "\tstat [iface] - show statistics for specified interface\n" \
-						 "\t\tfor all interfaces if ommited\n";
+						 "\t\tfor all interfaces if ommited\n" \
+						 "\tIf run without parameters - run in daemon mode\n";
 
 int main(int argc, char * argv[]) {
 	if(argc == 1) {
@@ -75,13 +76,13 @@ void run_daemon() {
 	unsigned char *buffer = (unsigned char *)malloc(DEF_BUFSIZE);
 	int data_size;
 
-	pthread_create(&gconf.wait_thread, NULL,
-			daemon_thread_func, NULL);
 	//TODO: check for repeat run
 #if 1
 	daemon(0, 0);
 #endif
 
+	pthread_create(&gconf.wait_thread, NULL,
+			daemon_thread_func, NULL);
 	retval = init_ip_socket();
 	if(retval < 0)
 		exit_err("init_ip_socket");

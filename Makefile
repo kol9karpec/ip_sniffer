@@ -4,7 +4,7 @@ SCRS=main.c \
 	 log.c \
 	 conf.c \
 	 data.c
-HDRS=lib.h log.h conf.h data.h 
+HDRS=lib.h log.h conf.h data.h types.h
 OBJS=$(SCRS:.c=.o)
 APP=my_app
 CFLAGS+= -pthread
