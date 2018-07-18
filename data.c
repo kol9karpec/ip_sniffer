@@ -1,13 +1,6 @@
 #include "data.h"
 
 int equal(struct sockaddr_in *a, struct sockaddr_in *b) {
-#if 0
-	char str1[256];
-	char str2[256];
-	strcpy(str1, inet_ntoa(a->sin_addr));
-	strcpy(str2, inet_ntoa(b->sin_addr));
-	_log("Comparing %s vs %s\n", str1, str2);
-#endif
 	return a->sin_addr.s_addr - b->sin_addr.s_addr;
 }
 

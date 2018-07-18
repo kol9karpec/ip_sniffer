@@ -15,6 +15,7 @@ const char * help_str = "Usage: {start | stop | show <ip> | select <iface> | sta
 						 "\tIf run without parameters - run in daemon mode\n";
 
 int main(int argc, char * argv[]) {
+	char * _all_str = "all";
 	if(argc == 1) {
 		run_daemon();
 	} else {
@@ -56,11 +57,13 @@ int main(int argc, char * argv[]) {
 			if (argc == 3) {
 				arg = argv[2];
 				size = strlen(argv[2]) + 1;
+			} else {
+				arg = _all_str;
+				size = strlen(_all_str) + 1;
 			}
 			cmd = STAT_IFACE;
 			_log("stat_iface!\n");
-		} else if (!strncmp(argv[1], command_str[HELP],
-					strlen(command_str[HELP]))) {
+		} else {
 			print_help();
 			return 1;
 		}

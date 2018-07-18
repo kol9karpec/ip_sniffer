@@ -78,6 +78,7 @@ static int get_ip_count(struct sockaddr_in *sin) {
 		}
 		node = node->next;
 	}
+
 	_log("%s: %s\t%d\n", __func__, inet_ntoa(sin->sin_addr), result);
 	return result;
 }
@@ -131,7 +132,6 @@ static int get_stats(int if_num, export_ip_stat_t **arr, int *arr_size) {
 
 int process_cli_command(command_t cmd, void *arg,
 		void *res_dest, int *size_dest) {
-	_log("%s command arrived\n", command_str[cmd]);
 	unsigned char *data_ptr = res_dest;
 	unsigned data_size = 0;
 	struct in_addr _addr;
@@ -149,15 +149,18 @@ int process_cli_command(command_t cmd, void *arg,
 
 	char ans[DEF_BUFSIZE];
 
+	_log("%s command arrived\n", command_str[cmd]);
 	switch(cmd) {
 		case START:
 			gconf.sniffing_stopped = 0;
 			ANS(data_ptr, data_size, ok_ans, ok_ans_size)
 			break;
+
 		case STOP:
 			gconf.sniffing_stopped = 1;
 			ANS(data_ptr, data_size, ok_ans, ok_ans_size)
 			break;
+
 		case SHOW_IP_COUNT:
 			rv = inet_aton(arg, &_addr);
 			if(!rv) {
@@ -169,6 +172,7 @@ int process_cli_command(command_t cmd, void *arg,
 				ANS(data_ptr, data_size, ans, strlen(ans)+1)
 			}
 			break;
+
 		case SELECT_IFACE:
 			rv = get_if_num_name(arg);
 			if(rv == -1)
@@ -178,39 +182,48 @@ int process_cli_command(command_t cmd, void *arg,
 				switch_iface_status(rv);
 			}
 			break;
+
 		case STAT_IFACE:
-			rv = get_if_num_name(arg);
-			if(rv == -1) {
+			if(!strcmp(arg, "all")) {
 				for(j=0;j<gconf.if_num;j++) {
 					get_stats(j, &arr, &arr_size);
 					sprintf(ans, "\t%s: \n", gconf.if_list[j].name);
 					ANS(data_ptr, data_size, ans, strlen(ans))
-						for(i=0;i<arr_size;i++) {
-							sprintf(ans, "%s:\t%d\n", inet_ntoa(arr[i].addr),
-									arr[i].count);
-							ANS(data_ptr, data_size, ans, strlen(ans))
-						}
-				}
-				ANS(data_ptr, data_size, "", 1)
-			}
-			else {
-				get_stats(rv, &arr, &arr_size);
-				sprintf(ans, "\t%s: \n", arg);
-				ANS(data_ptr, data_size, ans, strlen(ans))
-				for(i=0;i<arr_size;i++) {
-					sprintf(ans, "%s:\t%d\n", inet_ntoa(arr[i].addr),
+					for(i=0;i<arr_size;i++) {
+						sprintf(ans, "%s:\t%d\n", inet_ntoa(arr[i].addr),
 								arr[i].count);
-					ANS(data_ptr, data_size, ans, strlen(ans))
+						ANS(data_ptr, data_size, ans, strlen(ans))
+					}
+					if(arr_size)
+						free(arr);
 				}
 				ANS(data_ptr, data_size, "", 1)
+			} else {
+				rv = get_if_num_name(arg);
+				if(rv == -1) {
+					ANS(data_ptr, data_size, err_ans, err_ans_size)
+				} else {
+					get_stats(rv, &arr, &arr_size);
+					sprintf(ans, "\t%s: \n", arg);
+					ANS(data_ptr, data_size, ans, strlen(ans))
+					for(i=0;i<arr_size;i++) {
+						sprintf(ans, "%s:\t%d\n", inet_ntoa(arr[i].addr),
+									arr[i].count);
+						ANS(data_ptr, data_size, ans, strlen(ans))
+					}
+					ANS(data_ptr, data_size, "", 1)
+					if(arr_size)
+						free(arr);
+				}
 			}
 			break;
+
 		default:
+			ANS(data_ptr, data_size, err_ans, err_ans_size)
 			_log("Wrong command!\n");
 			return 1;
 	}
 
 	*size_dest = data_size;
-
 	return 0;
 }

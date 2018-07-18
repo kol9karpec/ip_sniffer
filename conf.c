@@ -3,8 +3,9 @@
 config_t gconf = {0};
 
 void deinit_conf() {
-	close(gconf.ip_socket);
 	free(gconf.if_list);
+	close(gconf.ip_socket);
+	deinit_list(gconf.ip_list);
 }
 
 int fill_interfaces_list() {
