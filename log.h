@@ -25,10 +25,4 @@ static void inline _log_cli(const char * fmt,...) {
 	va_end(args);
 }
 
-static void inline exit_err(const char * str) {
-	//TODO: print error to daemon log if daemon
-	perror(str);
-	exit(1);
-}
-
 #endif

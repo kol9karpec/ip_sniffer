@@ -23,4 +23,10 @@ void turn_iface_off(int num);
 
 void deinit_conf();
 
+static void inline exit_err(const char * str) {
+	//TODO: print error to daemon log if daemon
+	deinit_conf();
+	perror(str);
+	exit(1);
+}
 #endif /* __CONF_H__ */

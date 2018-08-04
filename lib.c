@@ -16,12 +16,10 @@ int init_daemon_log(const char * filename) {
 }
 
 int capture_packet(unsigned char *buffer, unsigned size) {
-	int saddr_size, data_size;
-	struct sockaddr saddr;
+	int data_size;
 
 	saddr_size = sizeof saddr;
-	data_size = recvfrom(gconf.ip_socket, buffer, size, 0, &saddr,
-			&saddr_size);
+	data_size = recv(gconf.ip_socket, buffer, size, 0);
 	if(data_size < 0)
 		_log("Recvfrom error, failed to get packets\n");
 
@@ -51,7 +49,7 @@ int process_ip_packet(unsigned char *buffer, unsigned size) {
 }
 
 int init_ip_socket() {
-	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+	int fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_IP));
 	if(fd < 0)
 		exit_err("socket");
 

@@ -17,6 +17,8 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>
+#include <net/ethernet.h>
+#include <netpacket/packet.h>
 
 #include "conf.h"
 #include "data.h"
