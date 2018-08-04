@@ -237,3 +237,181 @@ int process_cli_command(command_t cmd, void *arg,
 	*size_dest = data_size;
 	return 0;
 }
+
+#define TRY_FWRITE(ptr, size, memnum, fp, rv) \
+	do { \
+		(rv) = fwrite((ptr), (size), (memnum), (fp)); \
+		if(!(rv)) { \
+			_log("fwrite error: %s\n", strerror(errno)); \
+			return 1; \
+		} \
+	} while(0);
+
+/*
+ * The function writes statistics to the file in the next format:
+ *
+ * <Interfaces count>
+ *	[Interface #1 name (char[IF_NAME_SIZE])]
+ *	[Interface #2 name (char[IF_NAME_SIZE])]
+ *	...
+ *	[Interface #last name (char[IF_NAME_SIZE])]
+ * <Number of ip addresses count>
+ *	[IP address #1 (struct in_addr)]
+ *		[count for interface #1 (unsigned)]
+ *		[count for interface #2 (unsigned)]
+ *		...
+ *		[count for interface #last (unsigned)]
+ *	[IP address #2 (struct in_addr)]
+ *		[count for interface #1 (unsigned)]
+ *		[count for interface #2 (unsigned)]
+ *		...
+ *		[count for interface #last (unsigned)]
+ *	...
+ *	[IP address #last (struct in_addr)]
+ *		[count for interface #1 (unsigned)]
+ *		[count for interface #2 (unsigned)]
+ *		...
+ *		[count for interface #last (unsigned)]
+ *
+ */
+static int save_stats(char * filename) {
+	ip_list_t *node = gconf.ip_list;
+	iface_t *if_list = gconf.if_list;
+	unsigned if_num = gconf.if_num;
+
+	int i = 0;
+	int ip_num = 0;
+	int rv = 0;
+
+	FILE * fp = fopen(filename, "wb");
+	if(!fp) {
+		_log("fopen error: %s\n", strerror(errno));
+		return 1;
+	}
+
+	/* Writing interfaces to the file */
+	TRY_FWRITE(&if_num, sizeof(if_num), 1, fp, rv)
+
+	for (i = 0; i < if_num; i++) {
+		TRY_FWRITE(gconf.if_list[i].name, sizeof(gconf.if_list[i].name),
+					1, fp, rv)
+	}
+
+	/* Writing ip addresse's count to the file */
+	while (node) {
+		ip_num++;
+		node = node->next;
+	}
+
+	TRY_FWRITE(&ip_num, sizeof(ip_num), 1, fp, rv)
+	node = gconf.ip_list;
+	while (node) {
+		TRY_FWRITE(&node->data.addr, sizeof(node->data.addr), 1, fp, rv);
+		for(i = 0; i < if_num; i++) {
+			TRY_FWRITE(&node->data.if_count[i],
+					sizeof(node->data.if_count[i]), 1, fp, rv);
+		}
+		node = node->next;
+	}
+
+	_log("Successful write to file!\n");
+
+	fclose(fp);
+	return 0;
+}
+#undef TRY_FWRITE
+
+#define TRY_FREAD(ptr, size, memnum, fp, rv) \
+	do { \
+		(rv) = fread((ptr), (size), (memnum), (fp)); \
+		if(!(rv)) { \
+			_log("fread error: %s\n", strerror(errno)); \
+			return 1; \
+		} \
+	} while(0);
+
+/*
+ * The function reads statistics from file
+ */
+int read_stats(char * filename) {
+	ip_list_t *ip_list = gconf.ip_list,
+			  *node = NULL;
+
+	unsigned _if_num = 0;
+	unsigned _ip_num = 0;
+	char **_if_names_list = NULL;
+	struct sockaddr_in _sock_addr = {0};
+	unsigned _count = 0;
+
+	int i = 0, j = 0;
+	int rv = 0;
+
+	FILE * fp = fopen(filename, "rb");
+	if(!fp) {
+		_log("fopen error: %s\n", strerror(errno));
+		return 1;
+	}
+
+	/* Reading interfaces list from the file */
+	TRY_FREAD(&_if_num, sizeof(_if_num), 1, fp, rv)
+	_log("Read from file: if_num = %u\n", _if_num);
+	_if_names_list = malloc(sizeof(char *) * _if_num);
+	if(!_if_names_list) {
+		_log("malloc error: %s\n", strerror(errno));
+		return 1;
+	}
+
+	for (i = 0; i < _if_num; i++) {
+		_if_names_list[i] = malloc(IF_NAME_SIZE);
+		if(!_if_names_list[i]) {
+			_log("malloc error: %s\n", strerror(errno));
+			free(_if_names_list);
+			return 1;
+		}
+
+		TRY_FREAD(_if_names_list[i], IF_NAME_SIZE,
+					1, fp, rv)
+		_log("Read from file: if_name[%d] = %s\n", i, _if_names_list[i]);
+	}
+
+	/* Reading ip list from the file */
+	TRY_FREAD(&_ip_num, sizeof(_ip_num), 1, fp, rv)
+	_log("Read ip_num = %u from file\n", _ip_num);
+	for (i = 0; i < _ip_num; i++) {
+		TRY_FREAD(&_sock_addr, sizeof(_sock_addr), 1, fp, rv)
+		_log("Read ip %s from file\n", inet_ntoa(_sock_addr.sin_addr));
+		if (!(node = ip_in_list(ip_list, _sock_addr))) {
+			node = add_ip(&gconf.ip_list, _sock_addr);
+		}
+
+		for(j = 0; j < _if_num; j++) {
+			TRY_FREAD(&_count, sizeof(_count), 1, fp, rv);
+			rv = get_if_num_name(_if_names_list[j]);
+			if (rv < 0)
+				_log("The interface from the backup file is not in current list!\n");
+			else
+				node->data.if_count[rv] += _count;
+
+			_log("Read ip count for if #%d\t%u\n", rv, _count);
+		}
+	}
+
+	_log("Successful read from the file!\n");
+
+	for(i = 0; i < _if_num; i++)
+		free(_if_names_list[i]);
+	free(_if_names_list);
+
+	fclose(fp);
+
+	return 0;
+}
+#undef TRY_FREAD
+
+void sigint_handler(int signum) {
+	_log("SIGINT received!\n");
+	//TODO: save stats to file here
+	save_stats(DEF_BACKUP_FILE);
+	deinit_conf();
+	exit(0);
+}

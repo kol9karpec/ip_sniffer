@@ -1,4 +1,5 @@
 #include "lib.h"
+#include <signal.h>
 
 void run_daemon();
 void print_help();
@@ -82,11 +83,13 @@ void run_daemon() {
 	if(!buffer) {
 		exit_err("malloc");
 	}
+
 	//TODO: check for repeat run
-#if 0
+#if 1
 	daemon(0, 0);
 #endif
 
+	signal(SIGINT, sigint_handler);
 	pthread_create(&gconf.wait_thread, NULL,
 			daemon_thread_func, NULL);
 	retval = init_ip_socket();
@@ -96,6 +99,9 @@ void run_daemon() {
 
 	if(fill_interfaces_list())
 		exit_err("fill_interfaces_list");
+
+	if(read_stats(DEF_BACKUP_FILE))
+		_log("Error reading from the backup file!\n");
 
 #ifdef NO_AUTO_SNIFF
 	gconf.sniffing_stopped = 1;

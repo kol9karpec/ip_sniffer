@@ -3,8 +3,9 @@
 config_t gconf = {0};
 
 void deinit_conf() {
-	free(gconf.if_list);
 	close(gconf.ip_socket);
+	close(gconf.cli_socket);
+	free(gconf.if_list);
 	deinit_list(gconf.ip_list);
 }
 
@@ -35,12 +36,14 @@ int fill_interfaces_list() {
 
 	i = 0;
 	tmp = list;
+
 	while (tmp)
 	{
 		if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
 			struct sockaddr_in *sin = (struct sockaddr_in *)(tmp->ifa_addr);
 			char *ip_addr = inet_ntoa(sin->sin_addr);
-			memcpy(gconf.if_list[i].name, tmp->ifa_name, strlen(tmp->ifa_name)+1);
+			memcpy(gconf.if_list[i].name, tmp->ifa_name,
+					strlen(tmp->ifa_name) + 1);
 			gconf.if_list[i].addr = *sin;
 #ifndef NO_AUTO_IFACES_SNIFF
 			turn_iface_on(i);
@@ -53,7 +56,7 @@ int fill_interfaces_list() {
 		tmp = tmp->ifa_next;
 	}
 
-	for(i=0;i<gconf.if_num;i++) {
+	for(i = 0; i < gconf.if_num; i++) {
 		_log("Interface #%d: %s\t%s\n", i, gconf.if_list[i].name,
 				inet_ntoa(gconf.if_list[i].addr.sin_addr));
 	}

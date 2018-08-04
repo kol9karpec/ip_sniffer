@@ -26,6 +26,7 @@
 #include "log.h"
 
 #define DEF_LOG_FILE "/var/log/ip_sniffer.log"
+#define DEF_BACKUP_FILE "/var/cache/ip_sniffer.backup"
 #define SOCKET_PATH "/tmp/ip_sniffer.socket"
 #define DEF_BUFSIZE 500
 
@@ -43,5 +44,9 @@ bool daemon_repeat();
 
 int process_cli_command(command_t cmd, void *arg, void *res_dest,
 		int *size_dest);
+
+int read_stats(char * filename);
+
+void sigint_handler(int signum);
 
 #endif /* __LIB_H__ */

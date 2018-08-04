@@ -53,10 +53,10 @@ void inc_ip_count(ip_stat_t *data, int if_num) {
 
 void deinit_list(ip_list_t *head) {
 	ip_list_t *next = head;
-	do {
+	while(next) {
 		head = next;
 		next = head->next;
 		free(head->data.if_count);
 		free(head);
-	} while(next);
+	}
 }
