@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <ifaddrs.h>
 #include <string.h>
+#include <errno.h>
 
 #include "data.h"
 #include "types.h"

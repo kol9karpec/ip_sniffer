@@ -19,12 +19,17 @@ ip_list_t *ip_in_list(ip_list_t *head, struct sockaddr_in addr) {
 ip_list_t *add_ip(ip_list_t **head, struct sockaddr_in addr) {
 	ip_list_t *new = malloc(sizeof(ip_list_t));
 	ip_list_t *tmp = *head;
+
 	if(!new) {
-		perror("malloc");
+		_log("malloc error: %s\n", strerror(errno));
 		return NULL;
 	}
 	new->data.addr = addr;
 	new->data.if_count = malloc(sizeof(unsigned)*gconf.if_num);
+	if(!new->data.if_count) {
+		_log("malloc error: %s\n", strerror(errno));
+		return NULL;
+	}
 	new->next = NULL;
 	memset(new->data.if_count, 0, sizeof(unsigned)*gconf.if_num);
 

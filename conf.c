@@ -28,7 +28,12 @@ int fill_interfaces_list() {
 	}
 
 	gconf.if_list = malloc(sizeof(iface_t)*gconf.if_num);
-	i=0;
+	if(!gconf.if_list) {
+		_log("malloc error: %s\n", strerror(errno));
+		return 1;
+	}
+
+	i = 0;
 	tmp = list;
 	while (tmp)
 	{
@@ -41,7 +46,7 @@ int fill_interfaces_list() {
 			turn_iface_on(i);
 #endif
 			_log("Added interface %s to the list: %s\n", tmp->ifa_name,
-					ip_addr?ip_addr:"");
+					ip_addr ? ip_addr : "");
 			i++;
 		}
 

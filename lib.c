@@ -18,7 +18,6 @@ int init_daemon_log(const char * filename) {
 int capture_packet(unsigned char *buffer, unsigned size) {
 	int data_size;
 
-	saddr_size = sizeof saddr;
 	data_size = recv(gconf.ip_socket, buffer, size, 0);
 	if(data_size < 0)
 		_log("Recvfrom error, failed to get packets\n");
@@ -40,6 +39,11 @@ int process_ip_packet(unsigned char *buffer, unsigned size) {
 		ip_list_t *node = ip_in_list(gconf.ip_list, src);
 		if (!node) {
 			node = add_ip(&gconf.ip_list, src);
+		}
+
+		if (!node) {
+			_log("add_ip failed!\n");
+			return 1;
 		}
 
 		inc_ip_count(&node->data, get_if_num(dest));
@@ -103,6 +107,10 @@ static int get_stats(int if_num, export_ip_stat_t **arr, int *arr_size) {
 
 	if(_arr_size) {
 		*arr = malloc(sizeof(export_ip_stat_t)*_arr_size);
+		if(!(*arr)) {
+			_log("malloc error: %s\n", strerror(errno));
+			return 1;
+		}
 		node = gconf.ip_list;
 		while(node) {
 			if(node->data.if_count[if_num]) {
@@ -184,7 +192,11 @@ int process_cli_command(command_t cmd, void *arg,
 		case STAT_IFACE:
 			if(!strcmp(arg, "all")) {
 				for(j=0;j<gconf.if_num;j++) {
-					get_stats(j, &arr, &arr_size);
+					rv = get_stats(j, &arr, &arr_size);
+					if(rv) {
+						_log("get_stats() error!\n");
+						return 1;
+					}
 					sprintf(ans, "\t%s: \n", gconf.if_list[j].name);
 					ANS(data_ptr, data_size, ans, strlen(ans))
 					for(i=0;i<arr_size;i++) {

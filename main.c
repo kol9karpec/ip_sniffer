@@ -79,8 +79,11 @@ void run_daemon() {
 	unsigned char *buffer = (unsigned char *)malloc(DEF_BUFSIZE);
 	int data_size;
 
+	if(!buffer) {
+		exit_err("malloc");
+	}
 	//TODO: check for repeat run
-#if 1
+#if 0
 	daemon(0, 0);
 #endif
 
@@ -101,9 +104,16 @@ void run_daemon() {
 	while(1) {
 		if(!gconf.sniffing_stopped) {
 			data_size = capture_packet(buffer, DEF_BUFSIZE);
-			if(data_size < 0)
-				exit_err("capture_packet");
-			process_ip_packet(buffer, data_size);
+			//TODO: better error handling
+			if(data_size < 0) {
+				free(buffer);
+				exit_err("capture_packet()");
+			}
+
+			if (process_ip_packet(buffer, data_size)) {
+				free(buffer);
+				exit_err("process_ip_packet()");
+			}
 		}
 	}
 }
