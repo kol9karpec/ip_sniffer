@@ -4,13 +4,15 @@ SCRS=main.c \
 	 lib.c \
 	 log.c \
 	 conf.c \
-	 data.c
+	 data.c \
+	 tree.c
 
 HDRS=lib.h \
 	 log.h \
 	 conf.h \
 	 data.h \
-	 types.h
+	 types.h \
+	 tree.h
 
 OBJS=$(SCRS:.c=.o)
 APP=my_app

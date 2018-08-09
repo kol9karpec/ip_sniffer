@@ -2,6 +2,7 @@
 #define __TYPES_H__
 
 #define IF_NAME_SIZE 40
+
 #include <pthread.h>
 #include <netinet/ip.h>
 
